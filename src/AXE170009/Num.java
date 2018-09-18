@@ -3,19 +3,77 @@
 
 // Change following line to your NetId
 package AXE170009;
+import java.util.LinkedList;
+import java.util.Iterator;
 
 public class Num implements Comparable < Num > {
 
-    static long defaultBase = 10; // Change as needed
+    static long defaultBase = (long)Math.pow(2, 31);
     long base = defaultBase; // Change as needed
-    long[] arr; // array to store arbitrarily large integers
+    LinkedList<Long> number; // using LinkedList to store large no's instead of array for dynamic sizing.
     boolean isNegative; // boolean flag to represent negative numbers
     int len; // actual number of elements of array that are used;  number is stored in arr[0..len-1]
+    
+    //Start of constructors
+    public Num() {
+    	number = new LinkedList<Long>();
+    }
+    public Num(String s) {
+    	this(s, defaultBase);
+    }
 
-    public Num(String s) {}
-
-    public Num(long x) {}
-
+    public Num(long x) {
+    	this(x, defaultBase);
+    }
+    
+    //constructor for initializing base with input as string
+    public Num(String s, long base) {
+		this();
+    	this.base = base;
+    	s = s.trim();//remove all the extra spaces.
+    	//checks whether the string is empty.
+    	if(s.equals(""))return;
+    	
+    	try {
+    		char[] string = s.toCharArray();
+    		Num res = new Num("", base);
+    		int i = 0;
+    		if(string[i] == '-') {
+    			this.isNegative = true;
+    			i++;
+    		}
+    		for(;i<s.length();i++) {
+    			res = add(product(res, 10), new Num(Long.parseLong(string[i]+""), base));
+    		}
+    		this.number = res.number;
+    	}
+    	catch(Exception e) {
+    		System.out.println("Unrecognized character Exception: " + " at Value: " + s);
+    	}
+	}
+    
+    //constructor for initializing base with input as long.
+    public Num(long x, long base) {
+		this();
+		this.base = base;
+		
+		if(x < 0)this.isNegative = true;
+		x = Math.abs(x);
+		
+		if(x == 0) {
+			this.number.add(x);
+		}
+		else {
+			long digit;
+			while(x > 0) {
+				digit = x % this.base;
+				this.number.add(digit);
+				x /= this.base;
+			}
+		}
+	}
+    //End of constructors
+	
     public static Num add(Num a, Num b) {
         return null;
     }
@@ -27,7 +85,12 @@ public class Num implements Comparable < Num > {
     public static Num product(Num a, Num b) {
         return null;
     }
-
+    
+    //product of a Num and long
+    private Num product(Num n, long base) {
+    	
+	}
+    
     // Use divide and conquer
     public static Num power(Num a, long n) {
         return null;
