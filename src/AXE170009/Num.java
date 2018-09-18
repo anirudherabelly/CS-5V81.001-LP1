@@ -3,21 +3,17 @@
 
 // Change following line to your NetId
 package AXE170009;
-import java.util.LinkedList;
-import java.util.Iterator;
 
 public class Num implements Comparable < Num > {
 
     static long defaultBase = (long)Math.pow(2, 31);
     long base = defaultBase; // Change as needed
-    LinkedList<Long> number; // using LinkedList to store large no's instead of array for dynamic sizing.
+    long[] arr;  // array to store arbitrarily large integers
     boolean isNegative; // boolean flag to represent negative numbers
     int len; // actual number of elements of array that are used;  number is stored in arr[0..len-1]
+    int sizeAllotted; 
     
     //Start of constructors
-    public Num() {
-    	number = new LinkedList<Long>();
-    }
     public Num(String s) {
     	this(s, defaultBase);
     }
@@ -27,14 +23,18 @@ public class Num implements Comparable < Num > {
     }
     
     //constructor for initializing base with input as string
-    public Num(String s, long base) {
-		this();
-    	this.base = base;
-    	s = s.trim();//remove all the extra spaces.
-    	//checks whether the string is empty.
-    	if(s.equals(""))return;
+    private Num(String s, long base) {
+    	//remove all the extra spaces.
+    	s = s.trim();
     	
-    	try {
+    	this.base = base;
+    	
+    	int size = s.length();
+    	double logOfBase  = Math.log10(base); 
+    	this.sizeAllotted =  (int)Math.ceil(((size+1)/logOfBase)+1);
+		arr = new long[sizeAllotted];
+    	
+		try {
     		char[] string = s.toCharArray();
     		Num res = new Num("", base);
     		int i = 0;
@@ -45,7 +45,7 @@ public class Num implements Comparable < Num > {
     		for(;i<s.length();i++) {
     			res = add(product(res, 10), new Num(Long.parseLong(string[i]+""), base));
     		}
-    		this.number = res.number;
+    		this.arr = res.arr;
     	}
     	catch(Exception e) {
     		System.out.println("Unrecognized character Exception: " + " at Value: " + s);
@@ -54,20 +54,28 @@ public class Num implements Comparable < Num > {
     
     //constructor for initializing base with input as long.
     public Num(long x, long base) {
-		this();
-		this.base = base;
+    	this.base = base;
 		
-		if(x < 0)this.isNegative = true;
-		x = Math.abs(x);
+    	int size = String.valueOf(x).length();
+    	double logOfBase  = Math.log10(base); 
+    	this.sizeAllotted =  (int)Math.ceil(((size+1)/logOfBase)+1);
+    	arr = new long[this.sizeAllotted];
+		
+		if(x < 0) {
+			this.isNegative = true;
+			x = Math.abs(x);
+		}
 		
 		if(x == 0) {
-			this.number.add(x);
+			this.arr[len] = x;
+			len++;
 		}
 		else {
 			long digit;
 			while(x > 0) {
 				digit = x % this.base;
-				this.number.add(digit);
+				this.arr[len] = digit;
+				len++;
 				x /= this.base;
 			}
 		}
@@ -88,7 +96,22 @@ public class Num implements Comparable < Num > {
     
     //product of a Num and long
     private Num product(Num n, long base) {
+    	if(base == 0) {
+    		return new Num(0l, base);
+    	}
     	
+    	int index = 0;
+    	long carry = 0l, sum;
+    	Num res = new Num("", n.base);
+    	
+    	while(index < n.len || carry > 0) {
+    		sum = (n.arr[index] * base + carry);
+    		index++;
+    		res.arr[res.len] = sum % res.base;
+    		res.len++;
+    		carry = sum / res.base;
+    	}
+    	return res;
 	}
     
     // Use divide and conquer
