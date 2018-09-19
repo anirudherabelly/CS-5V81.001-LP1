@@ -37,13 +37,14 @@ public class Num implements Comparable < Num > {
 		try {
     		char[] string = s.toCharArray();
     		Num res = new Num("", base);
+		Num ten= new Num(10);
     		int i = 0;
     		if(string[i] == '-') {
     			this.isNegative = true;
     			i++;
     		}
     		for(;i<s.length();i++) {
-    			res = add(product(res, 10), new Num(Long.parseLong(string[i]+""), base));
+    			res = add(product(res, ten), new Num(Long.parseLong(string[i]+""), base));
     		}
     		this.arr = res.arr;
     	}
