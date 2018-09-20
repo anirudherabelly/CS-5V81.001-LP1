@@ -6,110 +6,107 @@ package AXE170009;
 
 public class Num implements Comparable < Num > {
 
-    static long defaultBase = (long)Math.pow(2, 31);
+    static long defaultBase = (long) Math.pow(2, 31);
     long base = defaultBase; // Change as needed
-    long[] arr;  // array to store arbitrarily large integers
+    long[] arr; // array to store arbitrarily large integers
     boolean isNegative; // boolean flag to represent negative numbers
     int len; // actual number of elements of array that are used;  number is stored in arr[0..len-1]
-    int sizeAllotted; 
-    
+    int sizeAllotted;
+
     //Start of constructors
     public Num(String s) {
-    	this(s, defaultBase);
+        this(s, defaultBase);
     }
 
     public Num(long x) {
-    	this(x, defaultBase);
+        this(x, defaultBase);
     }
-    
+
     //constructor for initializing base with input as string
     private Num(String s, long base) {
-    	//remove all the extra spaces.
-    	s = s.trim();
-    	
-    	this.base = base;
-    	
-    	int size = s.length();
-    	double logOfBase  = Math.log10(base); 
-    	this.sizeAllotted =  (int)Math.ceil(((size+1)/logOfBase)+1);
-		arr = new long[sizeAllotted];
-    	
-		try {
-    		char[] string = s.toCharArray();
-    		Num res = new Num("", base);
-    		Num ten= new Num(10);
-    		int i = 0;
-    		if(string[i] == '-') {
-    			this.isNegative = true;
-    			i++;
-    		}
-    		for(;i<s.length();i++) {
-    			res = add(product(res, ten), new Num(Long.parseLong(string[i]+""), base));
-    		}
-    		this.arr = res.arr;
-    	}
-    	catch(Exception e) {
-    		System.out.println("Unrecognized character Exception: " + " at Value: " + s);
-    	}
-	}
-    
+        //remove all the extra spaces.
+        s = s.trim();
+
+        this.base = base;
+
+        int size = s.length();
+        double logOfBase = Math.log10(base);
+        this.sizeAllotted = (int) Math.ceil(((size + 1) / logOfBase) + 1);
+        arr = new long[sizeAllotted];
+
+        try {
+            char[] string = s.toCharArray();
+            Num res = new Num("", base);
+            Num ten = new Num(10);
+            int i = 0;
+            if (string[i] == '-') {
+                this.isNegative = true;
+                i++;
+            }
+            for (; i < s.length(); i++) {
+                res = add(product(res, ten), new Num(Long.parseLong(string[i] + ""), base));
+            }
+            this.arr = res.arr;
+        } catch (Exception e) {
+            System.out.println("Unrecognized character Exception: " + " at Value: " + s);
+        }
+    }
+
     //constructor for initializing base with input as long.
     public Num(long x, long base) {
-    	this.base = base;
-		
-    	int size = String.valueOf(x).length();
-    	double logOfBase  = Math.log10(base); 
-    	this.sizeAllotted =  (int)Math.ceil(((size+1)/logOfBase)+1);
-    	arr = new long[this.sizeAllotted];
-		
-		if(x < 0) {
-			this.isNegative = true;
-			x = Math.abs(x);
-		}
-		
-		if(x == 0) {
-			this.arr[len] = x;
-			len++;
-		}
-		else {
-			long digit;
-			while(x > 0) {
-				digit = x % this.base;
-				this.arr[len] = digit;
-				len++;
-				x /= this.base;
-			}
-		}
-	}
+        this.base = base;
+
+        int size = String.valueOf(x).length();
+        double logOfBase = Math.log10(base);
+        this.sizeAllotted = (int) Math.ceil(((size + 1) / logOfBase) + 1);
+        arr = new long[this.sizeAllotted];
+
+        if (x < 0) {
+            this.isNegative = true;
+            x = Math.abs(x);
+        }
+
+        if (x == 0) {
+            this.arr[len] = x;
+            len++;
+        } else {
+            long digit;
+            while (x > 0) {
+                digit = x % this.base;
+                this.arr[len] = digit;
+                len++;
+                x /= this.base;
+            }
+        }
+    }
     //End of constructors
-	
+
     //sum of two signed big integers
     public static Num add(Num a, Num b) {
-    	if(a.isNegative ^ b.isNegative) {
-    		
-    	}
-    	else {
-    		return unsignedAdd(a, b);
-    	}
+        if (a.isNegative ^ b.isNegative) {
+
+        } else {
+            return unsignedAdd(a, b);
+        }
         return null;
     }
-    
+
     //sum of two unsigned big integers
     private static Num unsignedAdd(Num a, Num b) {
-    	Num res = new Num("", a.base);
-    	long carry = 0l;
-    	int indexa = 0, indexb = 0;
-    	long sum = 0;
-    	while(indexa < a.len || indexb < b.len || carry > 0) {
-    		sum += (indexa < a.len) ? a.arr[indexa++] : 0;
-    		sum += (indexb < b.len) ? b.arr[indexb++] : 0;
-    		sum += carry;
-    		res.arr[res.len++] = (sum % res.base);
-    		carry = sum / res.base;
-    	}
-    	return res;
+        Num res = new Num("", a.base);
+        long carry = 0l;
+        int indexa = 0, indexb = 0;
+        long sum = 0;
+        while (indexa < a.len || indexb < b.len || carry > 0) {
+            sum = (indexa < a.len) ? a.arr[indexa++] : 0;
+            sum += (indexb < b.len) ? b.arr[indexb++] : 0;
+            sum += carry;
+            res.arr[res.len++] = (sum % res.base);
+            carry = sum / res.base;
+        }
+        return res;
     }
-    
+
     public static Num subtract(Num a, Num b) {
         return null;
     }
@@ -117,7 +114,7 @@ public class Num implements Comparable < Num > {
     public static Num product(Num a, Num b) {
         return null;
     }
-    
+
     /*//product of a Num and long
     private Num product(Num n, long base) {
     	if(base == 0) {
@@ -137,7 +134,7 @@ public class Num implements Comparable < Num > {
     	}
     	return res;
 	}*/
-    
+
     // Use divide and conquer
     public static Num power(Num a, long n) {
         return null;
