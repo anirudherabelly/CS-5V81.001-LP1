@@ -37,7 +37,7 @@ public class Num implements Comparable < Num > {
 		try {
     		char[] string = s.toCharArray();
     		Num res = new Num("", base);
-		Num ten= new Num(10);
+    		Num ten= new Num(10);
     		int i = 0;
     		if(string[i] == '-') {
     			this.isNegative = true;
@@ -83,10 +83,33 @@ public class Num implements Comparable < Num > {
 	}
     //End of constructors
 	
+    //sum of two signed big integers
     public static Num add(Num a, Num b) {
+    	if(a.isNegative ^ b.isNegative) {
+    		
+    	}
+    	else {
+    		return unsignedAdd(a, b);
+    	}
         return null;
     }
-
+    
+    //sum of two unsigned big integers
+    private static Num unsignedAdd(Num a, Num b) {
+    	Num res = new Num("", a.base);
+    	long carry = 0l;
+    	int indexa = 0, indexb = 0;
+    	long sum = 0;
+    	while(indexa < a.len || indexb < b.len || carry > 0) {
+    		sum += (indexa < a.len) ? a.arr[indexa++] : 0;
+    		sum += (indexb < b.len) ? b.arr[indexb++] : 0;
+    		sum += carry;
+    		res.arr[res.len++] = (sum % res.base);
+    		carry = sum / res.base;
+    	}
+    	return res;
+    }
+    
     public static Num subtract(Num a, Num b) {
         return null;
     }
@@ -95,7 +118,7 @@ public class Num implements Comparable < Num > {
         return null;
     }
     
-    //product of a Num and long
+    /*//product of a Num and long
     private Num product(Num n, long base) {
     	if(base == 0) {
     		return new Num(0l, base);
@@ -113,7 +136,7 @@ public class Num implements Comparable < Num > {
     		carry = sum / res.base;
     	}
     	return res;
-	}
+	}*/
     
     // Use divide and conquer
     public static Num power(Num a, long n) {
