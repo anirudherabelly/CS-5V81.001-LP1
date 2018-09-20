@@ -139,13 +139,36 @@ public class Num implements Comparable < Num > {
     // Utility functions
     // compare "this" to "other": return +1 if this is greater, 0 if equal, -1 otherwise
     public int compareTo(Num other) {
+	if(this.isNegative && !other.isNegative) {
+        	return -1;
+        } else if(!this.isNegative && other.isNegative) {
+        	return 1;
+        } else {
+        	if(this.len < other.len) return -1;
+        	else if(this.len > other.len) return 1;
+        	else {
+        		for(int i=(this.len-1); i>=0; i--) {
+        			if(this.arr[i]>other.arr[i]) {
+        				return 1;
+        			} else if(this.arr[i]<other.arr[i]) {
+        				return -1;
+        			}
+        		}
+        	}
+        }
         return 0;
     }
 
     // Output using the format "base: elements of list ..."
     // For example, if base=100, and the number stored corresponds to 10965,
     // then the output is "100: 65 9 1"
-    public void printList() {}
+    public void printList() {
+    	System.out.print(base + ": ");
+    	for(int i=0; i<len; i++) {
+    		System.out.print(arr[i]+" ");
+    	}
+    	System.out.println();
+    }
 
     // Return number to a string in base 10
     public String toString() {
