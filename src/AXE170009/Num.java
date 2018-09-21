@@ -248,7 +248,58 @@ public class Num implements Comparable < Num > {
     // Each string is one of: "*", "+", "-", "/", "%", "^", "0", or
     // a number: [1-9][0-9]*.  There is no unary minus operator.
     public static Num evaluatePostfix(String[] expr) {
-        return null;
+    	
+    	//create a stack
+        Stack<Num> stack=new Stack<>();
+         
+        // Scan all characters one by one
+        for(int i=0;i<expr.length;i++)
+        {
+        	
+            char c=expr[i].charAt(0);
+             
+            // If the scanned character is an operand (number here), push it to the stack.
+            if(Character.isDigit(c)) {
+            	Num n=new Num(0);
+            	Num ten=new Num(10);
+            	while(Character.isDigit(c)) {
+            		Num x=new Num(expr[i]);
+            		n=add(product(n,ten),x);
+            		i++;
+            		c=expr[i].charAt(0);
+            	}
+            	i--;
+            	//push the number into stack
+            	stack.push(n);
+            }
+       
+            //  If the scanned character is an operator, pop two elements from stack apply the operator
+            else
+            {
+                Num val1 = stack.pop();
+                Num val2 = stack.pop();
+                 
+                switch(c)
+                {
+                    case '+':
+                    stack.push(add(val2,val1));
+                    break;
+                     
+                    case '-':
+                    stack.push(subtract(val2,val1));
+                    break;
+                     
+                    case '/':
+                    stack.push(divide(val2,val1));
+                    break;
+                     
+                    case '*':
+                    stack.push(product(val2,val1));
+                    break;
+              }
+            }
+        }
+        return stack.pop();    
     }
 
     // Evaluate an expression in infix and return resulting number
