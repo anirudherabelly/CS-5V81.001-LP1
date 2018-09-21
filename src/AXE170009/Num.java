@@ -12,6 +12,8 @@ public class Num implements Comparable < Num > {
     boolean isNegative; // boolean flag to represent negative numbers
     int len; // actual number of elements of array that are used;  number is stored in arr[0..len-1]
     int sizeAllotted;
+    static Num ZERO = new Num(0L);
+    static Num ONE = new Num(1L);
 
     //Start of constructors
     public Num(String s) {
@@ -137,7 +139,29 @@ public class Num implements Comparable < Num > {
 
     // Use divide and conquer
     public static Num power(Num a, long n) {
-        return null;
+		//System.out.print(Arrays.toString(a.arr) + "\t");
+		if(a.isZero()) {
+			return ZERO;
+		}
+		if(n==0) return ONE;
+		if(n==1) {
+			System.out.print(Arrays.toString(a.arr) + "\t");
+			return a;
+		}
+		Num val = power(a, n/2);
+		Num square = product(val, val);
+		if(n%2 == 1) {
+			return product(square, a);
+		} else {
+			return square;
+		}
+	}
+
+    public boolean isZero() {
+	for(int i=0; i<this.len; i++) {
+		if(this.arr[i]!=0) return false;
+	}
+	return true;
     }
 
     // Use binary search to calculate a/b
@@ -147,7 +171,18 @@ public class Num implements Comparable < Num > {
 
     // return a%b
     public static Num mod(Num a, Num b) {
-        return null;
+		if(b.isZero()) {
+			throw new IllegalArgumentException("Argument b is 0");
+		}
+		int compResult = a.compareTo(b);
+		if(a.isZero() || compResult == 0) {
+			return ZERO;
+		} else if(compResult == -1) {
+			return a;
+		} else if(compResult == 1){
+			return subtract(a, product(divide(a,b), b));
+		}
+		return null;
     }
 
     // Use binary search
