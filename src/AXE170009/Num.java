@@ -14,7 +14,7 @@ public class Num implements Comparable < Num > {
     int sizeAllotted;
     static Num ZERO = new Num(0L);
     static Num ONE = new Num(1L);
-
+    static Num TEN = new Num(10L);
     //Start of constructors
     public Num(String s) {
         this(s, defaultBase);
@@ -248,7 +248,7 @@ public class Num implements Comparable < Num > {
 	int index = this.len;
 	Num newNumber = new Num("", newBase);
 	while(index>0) {
-		newNumber = add(product(newNumber, oldBase), new Num(this.arr[--index], newBase));
+		newNumber = add(product(newNumber, new Num(oldBase)), new Num(this.arr[--index], newBase));
 	}
 	newNumber.isNegative = this.isNegative;
 	return newNumber;
@@ -403,30 +403,19 @@ public class Num implements Comparable < Num > {
             { 
             case '+': 
                 return add(a,b); 
-		break;	
-			    
             case '-': 
-                return subtract(a,b);
-		break;	
-			    
+                return subtract(a,b); 
             case '*': 
                 return product(a,b); 
-		break;	
-			    
             case '/': 
                 if (b == ZERO) 
                     throw new
                     UnsupportedOperationException("Cannot divide by zero"); 
-                return divide(a,b);
-		break;	
-			    
+                return divide(a,b); 
             case '%':
             	return mod(a,b);
-		break;	
-			    
             case '^':
             	return power(a,Long.parseLong(b.toString()));
-		break;
             } 
             return ZERO; 
         } 
