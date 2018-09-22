@@ -172,7 +172,7 @@ public class Num implements Comparable < Num > {
     // return a%b
     public static Num mod(Num a, Num b) {
 		if(b.isZero()) {
-			throw new IllegalArgumentException("Argument b is 0");
+			throw new ArithmeticException("Divisor b is 0");
 		}
 		int compResult = a.compareTo(b);
 		if(a.isZero() || compResult == 0) {
