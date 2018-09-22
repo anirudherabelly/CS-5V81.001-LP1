@@ -227,7 +227,15 @@ public class Num implements Comparable < Num > {
 
     // Return number to a string in base 10
     public String toString() {
-        return null;
+		Num tenBase = this.convertBase(10);
+		StringBuilder tenBaseSB = new StringBuilder();
+		for(int i=0; i<tenBase.len; i++) {
+			tenBaseSB.insert(0, tenBase.arr[i]);
+		} 
+		if(tenBase.isNegative = true) {
+			return "-" + tenBaseSB.toString();
+		}
+		return tenBaseSB.toString();
     }
 
     public long base() {
@@ -236,7 +244,14 @@ public class Num implements Comparable < Num > {
 
     // Return number equal to "this" number, in base=newBase
     public Num convertBase(int newBase) {
-        return null;
+        long oldBase = this.base;
+	int index = this.len;
+	Num newNumber = new Num("", newBase);
+	while(index>0) {
+		newNumber = add(product(newNumber, oldBase), new Num(this.arr[--index], newBase));
+	}
+	newNumber.isNegative = this.isNegative;
+	return newNumber;
     }
 
     // Divide by 2, for using in binary search
