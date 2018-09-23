@@ -371,7 +371,41 @@ public class Num implements Comparable < Num > {
 
     // Use binary search
     public static Num squareRoot(Num a) {
-        return null;
+    	if(a.compareTo((ZERO)) == -1){ // Checks if a is less than zero
+    		return null;
+    	}
+    	if(a.compareTo((ZERO)) == 0){
+    		return (new Num(0));
+    	}
+    	if(a.compareTo((ONE)) == 0){
+    		return (new Num(1));
+    	}else{
+    		Num result = binSquare(a, (TWO), a.by2()); // recursively finds the square root
+    		return result;
+    	}
+    }
+
+
+    private static Num binSquare(Num a, Num first, Num second){
+    	if(second.compareTo(first) != -1){
+    		Num diff=subtract(second,first);
+    		Num mid = unsignedAdd(first, diff.by2());
+			// If the element is present at the middle itself
+    		Num product = product(mid, mid);
+    		int dec = product.compareTo(a);
+			if (dec == 0){
+				return mid;
+			}
+			// If element is smaller than mid, then it can only
+			// be present in left subarray
+			if (dec != -1) {
+				return binSquare(a, first, subtract(mid, ONE));
+			}
+			// Else the element can only be present in right
+			// subarray
+			return binSquare(a, add(mid, ONE), second);
+    	}
+    	return second;
     }
 
 
