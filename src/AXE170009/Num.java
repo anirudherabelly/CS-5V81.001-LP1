@@ -132,7 +132,7 @@ public class Num implements Comparable < Num > {
     }
 
 	//sum of two unsigned big integers
-    private Num unsignedAdd(Num a, Num b) {
+    private static Num unsignedAdd(Num a, Num b) {
         Num res = new Num("", a.base);
         long carry = 0l;
         int indexa = 0, indexb = 0;
@@ -157,8 +157,23 @@ public class Num implements Comparable < Num > {
     	return travaerseToCompare(a, b);
     }
     
-    public static Num subtract(Num a, Num b) {
-        return null;
+    private static int travaerseToCompare(Num a, Num b) {
+		int indexa = 0, indexb = 0;
+		while(indexa < a.len) {
+			Long ai = a.arr[indexa++];
+			Long bi = b.arr[indexb++];
+			if(ai.compareTo(bi) != 0) {
+				return ai.compareTo(bi);
+			}
+		}
+		return 0;
+	}
+
+	public static Num subtract(Num a, Num b) {
+        if(a.isNegative ^ b.isNegative) {
+        	return unsignedAdd(a, b);
+        }
+        return unsignedCompareTo(a, b) > 0 ? unsignedSubtract(a, b, a.isNegative) : unsignedSubtract(b, a, !b.isNegative);
     }
     
     private static Num unsignedSubtract(Num a, Num b, boolean isNegative) {
@@ -172,8 +187,12 @@ public class Num implements Comparable < Num > {
 				diff += res.base;
 				borrow = 1;
 			}
-			
+			if() {
+				
+			}
 		}
+		assignSign(res, isNegative);
+		return res;
 	}
     
     public static Num product(Num a, Num b) {
@@ -190,6 +209,7 @@ public class Num implements Comparable < Num > {
     	else {
     		res = karatsubasplit(b, a);
     	}
+    	assignSign(res, a.isNegative ^ b.isNegative);
         return res;
     }
 
@@ -241,7 +261,11 @@ public class Num implements Comparable < Num > {
     	Num res = add(add(partOne, partTwo), partThree);
     	return res;
     }
-
+    
+    private static void assignSign(Num a, boolean isNegative) {
+    	a.isNegative = a.len == 1 ? (a.arr[0] == 0 ? false : isNegative) : isNegative;
+    }
+    
     // Use divide and conquer
     public static Num power(Num a, long n) {
 		//System.out.print(Arrays.toString(a.arr) + "\t");
@@ -271,6 +295,7 @@ public class Num implements Comparable < Num > {
 
     // Use binary search to calculate a/b
     public static Num divide(Num a, Num b) {
+    	
         return null;
     }
     
@@ -361,13 +386,13 @@ public class Num implements Comparable < Num > {
     // Return number equal to "this" number, in base=newBase
     public Num convertBase(int newBase) {
         long oldBase = this.base;
-	int index = this.len;
-	Num newNumber = new Num("", newBase);
-	while(index>0) {
-		newNumber = add(product(newNumber, new Num(oldBase)), new Num(this.arr[--index], newBase));
-	}
-	newNumber.isNegative = this.isNegative;
-	return newNumber;
+		int index = this.len;
+		Num newNumber = new Num("", newBase);
+		while(index>0) {
+			newNumber = add(product(newNumber, new Num(oldBase)), new Num(this.arr[--index], newBase));
+		}
+		newNumber.isNegative = this.isNegative;
+		return newNumber;
     }
 
     // Divide by 2, for using in binary search
