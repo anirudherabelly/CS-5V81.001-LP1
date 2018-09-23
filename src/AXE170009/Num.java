@@ -48,6 +48,7 @@ public class Num implements Comparable < Num > {
     int sizeAllotted = 0;
     static Num ZERO = new Num(0L);
     static Num ONE = new Num(1L);
+    static Num TWO = new Num(2L);
     static Num TEN = new Num(10L);
     
     //Start of constructors
@@ -187,10 +188,11 @@ public class Num implements Comparable < Num > {
 				diff += res.base;
 				borrow = 1;
 			}
-			if() {
-				
+			if(!( !(indexb < a.len) && diff == 0) || (diff == 0)) {
+				res.arr[res.len++] = diff;
 			}
 		}
+		//res.trim();
 		assignSign(res, isNegative);
 		return res;
 	}
@@ -294,12 +296,53 @@ public class Num implements Comparable < Num > {
     }
 
     // Use binary search to calculate a/b
-    public static Num divide(Num a, Num b) {
+    public static Num divide(Num a, Num b) throws Exception {
+    	Num res = new Num("", a.base);
     	
-        return null;
+    	if(unsignedCompareTo(b, a) == 0) {
+    		throw new UnsupportedOperationException("Divided By Zero");
+    	}
+    	else if(unsignedCompareTo(b, ONE) == 0) {
+    		res = a;
+    	}
+    	else if(unsignedCompareTo(b, TWO) == 0) {
+    		res = a.by2();
+    	}
+    	
+    	int ret = unsignedCompareTo(a, b);
+    	if(ret < 0) {
+    		res = ZERO;
+    	}
+    	else if(ret == 0) {
+    		res = ONE;
+    	}
+    	else {
+    		res = binarySearch(ONE, a, a, b);
+    	}
+    	assignSign(res, a.isNegative ^ b.isNegative);
+        return res;
     }
     
-    private static void leftShift(Num a, int k) {
+    private static Num binarySearch(Num low, Num high, Num a, Num b) {
+    	Num temp = unsignedAdd(low, high);
+    	Num mid = temp.by2();
+		Num left = product(mid, b);
+		Num right = unsignedAdd(left,b);
+		int leftcomp = unsignedCompareTo(left, a);
+		int rightcomp = unsignedCompareTo(a, right);
+		
+		if (leftcomp > 0) {
+			return binarySearch(low, mid, a, b);
+		}
+		else if (leftcomp <= 0 && rightcomp < 0) {
+			return mid;
+		}
+		else {
+			return binarySearch(unsignedAdd(mid, ONE), high, a, b);
+		}
+	}
+
+	private static void leftShift(Num a, int k) {
     	long[] temp = new long[a.sizeAllotted + k];
     	for(int i = 0; i < k; i++) {
     		temp[i] = 0l;
@@ -311,7 +354,7 @@ public class Num implements Comparable < Num > {
     }
     
     // return a%b
-    public static Num mod(Num a, Num b) {
+    public static Num mod(Num a, Num b) throws Exception {
 		if(b.isZero()) {
 			throw new ArithmeticException("Divisor b is 0");
 		}
@@ -397,13 +440,19 @@ public class Num implements Comparable < Num > {
 
     // Divide by 2, for using in binary search
     public Num by2() {
-        return null;
+    	Num res = product(this, this.base/2);
+    	rightShift(res);
+        return res;
     }
 
-    // Evaluate an expression in postfix and return resulting number
+    private void rightShift(Num res) {
+		if()
+	}
+
+	// Evaluate an expression in postfix and return resulting number
     // Each string is one of: "*", "+", "-", "/", "%", "^", "0", or
     // a number: [1-9][0-9]*.  There is no unary minus operator.
-    public static Num evaluatePostfix(String[] expr) {
+    public static Num evaluatePostfix(String[] expr) throws Exception {
     	
     	//create a stack
         Stack<Num> stack=new Stack<Num>();
@@ -448,7 +497,7 @@ public class Num implements Comparable < Num > {
                     break;
                      
                     case '/':
-                    stack.push(divide(val2,val1));
+                	stack.push(divide(val2,val1));
                     break;
                      
                     case '*':
@@ -471,7 +520,7 @@ public class Num implements Comparable < Num > {
     // Evaluate an expression in infix and return resulting number
     // Each string is one of: "*", "+", "-", "/", "%", "^", "(", ")", "0", or
     // a number: [1-9][0-9]*.  There is no unary minus operator.
-    public static Num evaluateInfix(String[] expr) {
+    public static Num evaluateInfix(String[] expr) throws Exception {
     	 // Stack for numbers: 'valuesStack' 
         Stack<Num> valuesStack = new Stack<>(); 
   
@@ -523,43 +572,41 @@ public class Num implements Comparable < Num > {
         
         while (!opsStack.empty()) 
             valuesStack.push(applyOp(opsStack.pop(), valuesStack.pop(), valuesStack.pop())); 
-  
-        // Top of 'valuesStack' contains result, return it 
-        return valuesStack.pop(); 
-    } // end of infix evaluation
-        //helper function for infix evaluation
-        public static boolean hasPrecedence(char op1, char op2) 
+        	// Top of 'valuesStack' contains result, return it 
+    	return valuesStack.pop(); 
+	} // end of infix evaluation
+        
+	//helper function for infix evaluation
+    public static boolean hasPrecedence(char op1, char op2) 
+    { 
+        if (op2 == '(' || op2 == ')') 
+            return false; 
+        if ((op1 == '*' || op1 == '/') && (op2 == '+' || op2 == '-')) 
+            return false; 
+        else
+            return true; 
+    } 
+	
+    //helper function for infix evaluation
+    public static Num applyOp(char op, Num b, Num a) throws Exception 
+    { 
+        switch (op) 
         { 
-            if (op2 == '(' || op2 == ')') 
-                return false; 
-            if ((op1 == '*' || op1 == '/') && (op2 == '+' || op2 == '-')) 
-                return false; 
-            else
-                return true; 
+        case '+': 
+            return add(a,b); 
+        case '-': 
+            return subtract(a,b); 
+        case '*': 
+            return product(a,b); 
+        case '/': 
+            return divide(a,b);
+        case '%':
+        	return mod(a,b);
+        case '^':
+        	return power(a,Long.parseLong(b.toString()));
         } 
-    	//helper function for infix evaluation
-        public static Num applyOp(char op, Num b, Num a) 
-        { 
-            switch (op) 
-            { 
-            case '+': 
-                return add(a,b); 
-            case '-': 
-                return subtract(a,b); 
-            case '*': 
-                return product(a,b); 
-            case '/': 
-                if (b == ZERO) 
-                    throw new
-                    UnsupportedOperationException("Cannot divide by zero"); 
-                return divide(a,b); 
-            case '%':
-            	return mod(a,b);
-            case '^':
-            	return power(a,Long.parseLong(b.toString()));
-            } 
-            return ZERO; 
-        } 
+        return ZERO; 
+    } 
 
 
     public static void main(String[] args) {
