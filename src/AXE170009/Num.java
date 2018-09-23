@@ -3,18 +3,53 @@
 
 // Change following line to your NetId
 package AXE170009;
+import java.util.Arrays;
+import java.util.Stack;
 
 public class Num implements Comparable < Num > {
+	
+	class Split {
+		Num firstHalf;
+		Num secondHalf;
+
+		Split() {
+			firstHalf = new Num("");
+			secondHalf = new Num("");
+		}
+
+		public void splitNum(Num n, int k) {
+			firstHalf.arr = new long[k];
+			firstHalf.base = n.base;
+			firstHalf.len = k;
+			firstHalf.sizeAllotted = firstHalf.len;
+			
+			secondHalf.arr = new long[n.len-k];
+			secondHalf.base = n.base;
+			secondHalf.len = n.len - k;
+			secondHalf.sizeAllotted = secondHalf.len;
+			
+			int nSize = n.len-1, fIndex = 0, sIndex = 0, nIndex = 0;
+			
+			while (nSize >= 0) {
+				if (nIndex < k) {
+					firstHalf.arr[fIndex++] = n.arr[nIndex++];
+				} else {
+					secondHalf.arr[sIndex++] = n.arr[nIndex++];
+				}
+			}
+		}
+	}
 
     static long defaultBase = (long) Math.pow(2, 31);
     long base = defaultBase; // Change as needed
     long[] arr; // array to store arbitrarily large integers
-    boolean isNegative; // boolean flag to represent negative numbers
-    int len; // actual number of elements of array that are used;  number is stored in arr[0..len-1]
-    int sizeAllotted;
+    boolean isNegative = false; // boolean flag to represent negative numbers
+    int len = 0; // actual number of elements of array that are used;  number is stored in arr[0..len-1]
+    int sizeAllotted = 0;
     static Num ZERO = new Num(0L);
     static Num ONE = new Num(1L);
     static Num TEN = new Num(10L);
+    
     //Start of constructors
     public Num(String s) {
         this(s, defaultBase);
@@ -23,34 +58,39 @@ public class Num implements Comparable < Num > {
     public Num(long x) {
         this(x, defaultBase);
     }
-
+    
     //constructor for initializing base with input as string
-    private Num(String s, long base) {
-        //remove all the extra spaces.
+    public Num(String s, long base) {
+    	//remove all the extra spaces.
         s = s.trim();
-
         this.base = base;
-
+        if(s.equals("")) {
+        	this.arr = new long[1];
+        	this.len = 0;
+        	this.sizeAllotted = 1;
+        	return;
+        }
+        
         int size = s.length();
         double logOfBase = Math.log10(base);
         this.sizeAllotted = (int) Math.ceil(((size + 1) / logOfBase) + 1);
         arr = new long[sizeAllotted];
-
+        
         try {
-            char[] string = s.toCharArray();
+        	char[] charArray = s.toCharArray();
             Num res = new Num("", base);
-            Num ten = new Num(10);
+            
             int i = 0;
-            if (string[i] == '-') {
+            if (charArray[i] == '-') {
                 this.isNegative = true;
                 i++;
             }
             for (; i < s.length(); i++) {
-                res = add(product(res, ten), new Num(Long.parseLong(string[i] + ""), base));
+            	res = add(product(res, 10l), new Num(Long.parseLong(charArray[i] + ""), base));
             }
             this.arr = res.arr;
         } catch (Exception e) {
-            System.out.println("Unrecognized character Exception: " + " at Value: " + s);
+            System.out.println("Unrecognized character Exception: " + " in input: " + s);
         }
     }
 
@@ -62,7 +102,7 @@ public class Num implements Comparable < Num > {
         double logOfBase = Math.log10(base);
         this.sizeAllotted = (int) Math.ceil(((size + 1) / logOfBase) + 1);
         arr = new long[this.sizeAllotted];
-
+        
         if (x < 0) {
             this.isNegative = true;
             x = Math.abs(x);
@@ -72,10 +112,10 @@ public class Num implements Comparable < Num > {
             this.arr[len] = x;
             len++;
         } else {
-            long digit;
+            long temp;
             while (x > 0) {
-                digit = x % this.base;
-                this.arr[len] = digit;
+                temp = x % this.base;
+                this.arr[len] = temp;
                 len++;
                 x /= this.base;
             }
@@ -86,15 +126,13 @@ public class Num implements Comparable < Num > {
     //sum of two signed big integers
     public static Num add(Num a, Num b) {
         if (a.isNegative ^ b.isNegative) {
-
-        } else {
-            return unsignedAdd(a, b);
+        	return unsignedCompareTo(a, b) > 0 ? unsignedSubtract(a, b, a.isNegative) : unsignedSubtract(b, a, b.isNegative);
         }
-        return null;
+        return unsignedAdd(a, b);
     }
 
-    //sum of two unsigned big integers
-    private static Num unsignedAdd(Num a, Num b) {
+	//sum of two unsigned big integers
+    private Num unsignedAdd(Num a, Num b) {
         Num res = new Num("", a.base);
         long carry = 0l;
         int indexa = 0, indexb = 0;
@@ -108,17 +146,55 @@ public class Num implements Comparable < Num > {
         }
         return res;
     }
-
+    
+    private static int unsignedCompareTo(Num a, Num b) {
+    	if(a.len < b.len) {
+    		return -1;
+    	}
+    	else if(a.len > b.len) {
+    		return 1;
+    	}
+    	return travaerseToCompare(a, b);
+    }
+    
     public static Num subtract(Num a, Num b) {
         return null;
     }
-
+    
+    private static Num unsignedSubtract(Num a, Num b, boolean isNegative) {
+		Num res = new Num("", a.base);
+		int indexa = 0, indexb = 0;
+		long borrow = 0l, diff;
+		while(indexa < a.len || indexb < b.len || borrow > 0) {
+			diff = a.arr[indexa++] - b.arr[indexb++] - borrow;
+			borrow = 0l;
+			if(diff < 0) {
+				diff += res.base;
+				borrow = 1;
+			}
+			
+		}
+	}
+    
     public static Num product(Num a, Num b) {
-        return null;
+    	Num res;
+    	if(a.len == 1 || b.len == 1) {
+    		res = b.len == 1 ? product(a, b.arr[0]) : product(b, a.arr[0]);
+    	}
+    	else if(a.len == 0 || b.len == 0){
+    		res = new Num("", a.base);
+    	}
+    	else if(a.len >= b.len) {
+    		res = karatsubasplit(a, b);
+    	}
+    	else {
+    		res = karatsubasplit(b, a);
+    	}
+        return res;
     }
 
-    /*//product of a Num and long
-    private Num product(Num n, long base) {
+    //product of a Num and long
+    private static Num product(Num n, long base) {
     	if(base == 0) {
     		return new Num(0l, base);
     	}
@@ -135,7 +211,36 @@ public class Num implements Comparable < Num > {
     		carry = sum / res.base;
     	}
     	return res;
-	}*/
+	}
+    
+    private static Num karatsubasplit(Num a, Num b) {
+    	int k = (int) b.len / 2;
+    	
+    	Split sp = a.new Split();
+    	sp.splitNum(a, k);
+    	Num aFirstHalf = sp.firstHalf;
+    	Num aSecondHalf = sp.secondHalf;
+    	
+    	sp = b.new Split();
+    	sp.splitNum(b, k);
+    	Num bFirstHalf = sp.firstHalf;
+    	Num bSecondHalf = sp.secondHalf;
+    	
+    	Num partOne = product(aSecondHalf, bSecondHalf);
+    	Num partThree = product(aFirstHalf, bFirstHalf);
+    	
+    	Num sumAfhAsh = add(aFirstHalf, aSecondHalf);
+    	Num sumBfhBsh = add(bFirstHalf, bSecondHalf);
+    	
+    	Num prodAfhshBfhsh = product(sumAfhAsh, sumBfhBsh);
+    	Num partTwo = subtract(subtract(prodAfhshBfhsh, partOne), partThree);
+    	
+    	leftShift(partOne, 2 * k);
+    	leftShift(partTwo, k);
+    	
+    	Num res = add(add(partOne, partTwo), partThree);
+    	return res;
+    }
 
     // Use divide and conquer
     public static Num power(Num a, long n) {
@@ -158,17 +263,28 @@ public class Num implements Comparable < Num > {
 	}
 
     public boolean isZero() {
-	for(int i=0; i<this.len; i++) {
-		if(this.arr[i]!=0) return false;
-	}
-	return true;
+    	for(int i=0; i<this.len; i++) {
+    		if(this.arr[i]!=0) return false;
+    	}
+    	return true;
     }
 
     // Use binary search to calculate a/b
     public static Num divide(Num a, Num b) {
         return null;
     }
-
+    
+    private static void leftShift(Num a, int k) {
+    	long[] temp = new long[a.sizeAllotted + k];
+    	for(int i = 0; i < k; i++) {
+    		temp[i] = 0l;
+    	}
+    	for(int i = k; i < a.sizeAllotted + k; i++) {
+    		temp[i] = a.arr[i];
+    	}
+    	a.arr = temp;
+    }
+    
     // return a%b
     public static Num mod(Num a, Num b) {
 		if(b.isZero()) {
@@ -265,7 +381,7 @@ public class Num implements Comparable < Num > {
     public static Num evaluatePostfix(String[] expr) {
     	
     	//create a stack
-        Stack<Num> stack=new Stack<>();
+        Stack<Num> stack=new Stack<Num>();
          
         // Scan all characters one by one
         for(int i=0;i<expr.length;i++)
@@ -426,8 +542,8 @@ public class Num implements Comparable < Num > {
         Num y = new Num("8");
         Num z = Num.add(x, y);
         System.out.println(z);
-        Num a = Num.power(x, 8);
-        System.out.println(a);
-        if (z != null) z.printList();
+        //Num a = Num.power(x, 8);
+        //System.out.println(a);
+        //if (z != null) z.printList();
     }
 }
