@@ -480,7 +480,9 @@ public class Num implements Comparable < Num > {
     }
 
     private void rightShift(Num res) {
-		if()
+		long arr2[] = new long[arr.length-1];
+		System.arraycopy(arr, 1, arr2, 0, arr.length-1);
+		arr = arr2;
 	}
 
 	// Evaluate an expression in postfix and return resulting number
