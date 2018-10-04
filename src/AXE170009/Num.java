@@ -177,6 +177,12 @@ public class Num implements Comparable < Num > {
         }
         return unsignedCompareTo(a, b) > 0 ? unsignedSubtract(a, b, a.isNegative) : unsignedSubtract(b, a, !b.isNegative);
     }
+	
+	private static int maxlen(Num a, Num b) {
+	 int k=0;
+	 k=(a.len > b.len)?a.len+1:b.len+1;
+	 return k;
+ 	}
 
     private static Num unsignedSubtract(Num a, Num b, boolean isNegative) {
 		Num res = new Num("", a.base);
