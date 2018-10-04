@@ -46,11 +46,12 @@ public class Num implements Comparable < Num > {
     boolean isNegative = false; // boolean flag to represent negative numbers
     int len = 0; // actual number of elements of array that are used;  number is stored in arr[0..len-1]
     int sizeAllotted = 0;
+
     static Num ZERO = new Num(0L);
     static Num ONE = new Num(1L);
     static Num TWO = new Num(2L);
     static Num TEN = new Num(10L);
-    
+
     //Start of constructors
     public Num(String s) {
         this(s, defaultBase);
@@ -176,7 +177,7 @@ public class Num implements Comparable < Num > {
         }
         return unsignedCompareTo(a, b) > 0 ? unsignedSubtract(a, b, a.isNegative) : unsignedSubtract(b, a, !b.isNegative);
     }
-    
+
     private static Num unsignedSubtract(Num a, Num b, boolean isNegative) {
 		Num res = new Num("", a.base);
 		int indexa = 0, indexb = 0;
@@ -267,7 +268,7 @@ public class Num implements Comparable < Num > {
     private static void assignSign(Num a, boolean isNegative) {
     	a.isNegative = a.len == 1 ? (a.arr[0] == 0 ? false : isNegative) : isNegative;
     }
-    
+
     // Use divide and conquer
     public static Num power(Num a, long n) {
 		//System.out.print(Arrays.toString(a.arr) + "\t");
@@ -322,7 +323,7 @@ public class Num implements Comparable < Num > {
     	assignSign(res, a.isNegative ^ b.isNegative);
         return res;
     }
-    
+
     private static Num binarySearch(Num low, Num high, Num a, Num b) {
     	Num temp = unsignedAdd(low, high);
     	Num mid = temp.by2();
@@ -341,8 +342,8 @@ public class Num implements Comparable < Num > {
 			return binarySearch(unsignedAdd(mid, ONE), high, a, b);
 		}
 	}
-
-	private static void leftShift(Num a, int k) {
+    
+    private static void leftShift(Num a, int k) {
     	long[] temp = new long[a.sizeAllotted + k];
     	for(int i = 0; i < k; i++) {
     		temp[i] = 0l;
