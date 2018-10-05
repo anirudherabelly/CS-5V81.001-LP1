@@ -40,7 +40,7 @@ public class Num implements Comparable < Num > {
 		}
 	}
 
-    static long defaultBase = (long) Math.pow(2, 31);
+    static long defaultBase = (long) Math.pow(10, 3); //multiples of 10
     long base = defaultBase; // Change as needed
     long[] arr; // array to store arbitrarily large integers
     boolean isNegative = false; // boolean flag to represent negative numbers
@@ -65,27 +65,23 @@ public class Num implements Comparable < Num > {
     public Num(String s, long base) {
     	//remove all the extra spaces.
         s = s.trim();
+        if(s.charAt(0) == '-') {
+        	this.isNegative = true;
+        	s = s.substring(1);
+        }
+        
         this.base = base;
         int size = s.length();
         double logOfBase = Math.log10(base);
-        this.sizeAllotted = (int) Math.ceil(((size + 1) / logOfBase) + 1);
-        arr = new long[sizeAllotted];
+        this.sizeAllotted = (int) Math.ceil(size / logOfBase);
+        this.len = 0;
+        arr = new long[this.sizeAllotted];
         
-        try {
-        	char[] charArray = s.toCharArray();
-            Num res = new Num(base, 0);
-            
-            int i = 0;
-            if (charArray[i] == '-') {
-                this.isNegative = true;
-                i++;
-            }
-            for (; i < s.length(); i++) {
-            	res = add(product(res, 10l), new Num(Long.parseLong(charArray[i] + ""), base));
-            }
-            this.arr = res.arr;
-        } catch (Exception e) {
-            System.out.println("Unrecognized character Exception: " + " in input: " + s);
+        int start, end = size;
+        while(len < sizeAllotted) {
+        	start = (end - (int)logOfBase) < 0 ? 0 : (end - (int)logOfBase);
+        	arr[len++] = Long.parseLong(s.substring(start, end));
+        	end = start;
         }
     }
 
@@ -95,7 +91,8 @@ public class Num implements Comparable < Num > {
 
         int size = String.valueOf(x).length();
         double logOfBase = Math.log10(base);
-        this.sizeAllotted = (int) Math.ceil(((size + 1) / logOfBase) + 1);
+        this.sizeAllotted = (int) Math.ceil(size / logOfBase);
+        this.len = 0;
         arr = new long[this.sizeAllotted];
         
         if (x < 0) {
@@ -104,14 +101,12 @@ public class Num implements Comparable < Num > {
         }
 
         if (x == 0) {
-            this.arr[len] = x;
-            len++;
+            this.arr[len++] = x;
         } else {
             long temp;
             while (x > 0) {
                 temp = x % this.base;
-                this.arr[len] = temp;
-                len++;
+                this.arr[len++] = temp;
                 x /= this.base;
             }
         }
@@ -127,6 +122,12 @@ public class Num implements Comparable < Num > {
     }
     //End of constructor for result 
     
+    //utility function for getting maximum length of two nums
+    private static int maxlen(Num a, Num b) {
+		int k = (a.len > b.len)?a.len : b.len;
+		return k;
+ 	}
+    
     //sum of two signed big integers
     public static Num add(Num a, Num b) {
         if (a.isNegative ^ b.isNegative) {
@@ -137,6 +138,8 @@ public class Num implements Comparable < Num > {
 
 	//sum of two unsigned big integers
     private static Num unsignedAdd(Num a, Num b) {
+    	
+    	
         Num res = new Num(a.base, maxlen(a, b));
         
         long carry = 0l;
@@ -180,18 +183,20 @@ public class Num implements Comparable < Num > {
         }
         return unsignedCompareTo(a, b) > 0 ? unsignedSubtract(a, b, a.isNegative) : unsignedSubtract(b, a, !b.isNegative);
     }
-	
-	private static int maxlen(Num a, Num b) {
-		int k = (a.len > b.len)?a.len : b.len;
-		return k;
- 	}
 
     private static Num unsignedSubtract(Num a, Num b, boolean isNegative) {
-		Num res = new Num("", a.base);
+    	if(a.len == 0)return b;
+    	if(b.len == 0)return a;
+    	
+		Num res = new Num(a.base, maxlen(a, b));
+		
 		int indexa = 0, indexb = 0;
 		long borrow = 0l, diff;
+		
 		while(indexa < a.len || indexb < b.len || borrow > 0) {
-			diff = a.arr[indexa++] - b.arr[indexb++] - borrow;
+			diff = indexa < a.len ? a.arr[indexa++] : 0;
+			diff -= indexb < b.len ? b.arr[indexb++] : 0; 
+			diff -= borrow;
 			borrow = 0l;
 			if(diff < 0) {
 				diff += res.base;
@@ -445,7 +450,7 @@ public class Num implements Comparable < Num > {
     // then the output is "100: 65 9 1"
     public void printList() {
     	System.out.print(base + ": ");
-    	for(int i=0; i<len; i++) {
+    	for(int i=0; i < len; i++) {
     		System.out.print(arr[i]+" ");
     	}
     	System.out.println();
@@ -654,10 +659,28 @@ public class Num implements Comparable < Num > {
 
 
     public static void main(String[] args) {
-        Num x = new Num(899);
-        Num y = new Num("88");
-        Num z = Num.add(x, y);
-        System.out.println(z);
+        Num x = new Num(999);
+        long[] arr = x.arr;
+        for(int i = 0; i < arr.length; i++) {
+        	System.out.print(arr[i] +" ");
+        }
+        System.out.println();
+        
+        Num y = new Num("1888");
+        arr = y.arr;
+        for(int i = 0; i < arr.length; i++) {
+        	System.out.print(arr[i] +" ");
+        }
+        System.out.println();
+        
+        
+        Num z = Num.subtract(y, x);
+        arr = z.arr;
+        for(int i = 0; i < z.len; i++) {
+        	System.out.print(arr[i] +" ");
+        }
+        System.out.println(z.isNegative);
+        
         //Num a = Num.power(x, 8);
         //System.out.println(a);
         //if (z != null) z.printList();
