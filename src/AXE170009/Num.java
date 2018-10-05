@@ -66,13 +66,6 @@ public class Num implements Comparable < Num > {
     	//remove all the extra spaces.
         s = s.trim();
         this.base = base;
-        if(s.equals("")) {
-        	this.arr = new long[1];
-        	this.len = 0;
-        	this.sizeAllotted = 1;
-        	return;
-        }
-        
         int size = s.length();
         double logOfBase = Math.log10(base);
         this.sizeAllotted = (int) Math.ceil(((size + 1) / logOfBase) + 1);
@@ -80,7 +73,7 @@ public class Num implements Comparable < Num > {
         
         try {
         	char[] charArray = s.toCharArray();
-            Num res = new Num("", base);
+            Num res = new Num(base, 0);
             
             int i = 0;
             if (charArray[i] == '-') {
@@ -124,7 +117,16 @@ public class Num implements Comparable < Num > {
         }
     }
     //End of constructors
-
+    
+    //Start of constructor for result in operations +, -, * ,/
+    private Num(long base, int k) {
+    	this.arr = new long[k+1];;
+    	this.base = base;
+    	this.len = 0;
+    	this.sizeAllotted = k+1; 
+    }
+    //End of constructor for result 
+    
     //sum of two signed big integers
     public static Num add(Num a, Num b) {
         if (a.isNegative ^ b.isNegative) {
@@ -135,7 +137,8 @@ public class Num implements Comparable < Num > {
 
 	//sum of two unsigned big integers
     private static Num unsignedAdd(Num a, Num b) {
-        Num res = new Num("", a.base);
+        Num res = new Num(a.base, maxlen(a, b));
+        
         long carry = 0l;
         int indexa = 0, indexb = 0;
         long sum = 0;
@@ -179,9 +182,8 @@ public class Num implements Comparable < Num > {
     }
 	
 	private static int maxlen(Num a, Num b) {
-	 int k=0;
-	 k=(a.len > b.len)?a.len+1:b.len+1;
-	 return k;
+		int k = (a.len > b.len)?a.len : b.len;
+		return k;
  	}
 
     private static Num unsignedSubtract(Num a, Num b, boolean isNegative) {
@@ -230,13 +232,12 @@ public class Num implements Comparable < Num > {
     	
     	int index = 0;
     	long carry = 0l, sum;
-    	Num res = new Num("", n.base);
+    	Num res = new Num(n.base, 0);
     	
     	while(index < n.len || carry > 0) {
     		sum = (n.arr[index] * base + carry);
     		index++;
-    		res.arr[res.len] = sum % res.base;
-    		res.len++;
+    		res.arr[res.len++] = sum % res.base;
     		carry = sum / res.base;
     	}
     	return res;
@@ -653,8 +654,8 @@ public class Num implements Comparable < Num > {
 
 
     public static void main(String[] args) {
-        Num x = new Num(999);
-        Num y = new Num("8");
+        Num x = new Num(899);
+        Num y = new Num("88");
         Num z = Num.add(x, y);
         System.out.println(z);
         //Num a = Num.power(x, 8);
