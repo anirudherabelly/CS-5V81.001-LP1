@@ -509,23 +509,13 @@ public class Num implements Comparable < Num > {
         // Scan all characters one by one
         for(int i=0;i<expr.length;i++)
         {
-        	
-            char c=expr[i].charAt(0);
+        	String s = expr[i];
              
             // If the scanned character is an operand (number here),
             // push it to the stack.
-            if(Character.isDigit(c)) {
-            	Num n=new Num(0l);
-            	while(Character.isDigit(c)) {
-            		Num x=new Num(expr[i]);
-            		n=add(product(n,TEN),x);
-            		i++;
-            		c=expr[i].charAt(0);
-            	}
-            	i--;
-            	//push the number into stack
-            	stack.push(n);
-            }
+            if(isDigit(s)) {
+                stack.push(new Num(s)); 
+            }	
             	
              
             //  If the scanned character is an operator, pop two
@@ -535,29 +525,29 @@ public class Num implements Comparable < Num > {
                 Num val1 = stack.pop();
                 Num val2 = stack.pop();
                  
-                switch(c)
+                switch(s)
                 {
-                    case '+':
+                    case "+":
                     stack.push(add(val2,val1));
                     break;
                      
-                    case '-':
+                    case "-":
                     stack.push(subtract(val2,val1));
                     break;
                      
-                    case '/':
+                    case "*":
                 	stack.push(divide(val2,val1));
                     break;
                      
-                    case '*':
+                    case "/":
                     stack.push(product(val2,val1));
                     break;
 				
-                    case '%':
+                    case "%":
                     stack.push(mod(val2,val1));
                     break;
 				
-                    case '^':
+                    case "^":
                     stack.push(power(val2,Long.parseLong(val1.toString())));
                     break;	
               }
@@ -565,67 +555,70 @@ public class Num implements Comparable < Num > {
         }
         return stack.pop();    
     }
+    private static boolean isDigit(String str) {
+        if(str == null || str.trim().isEmpty()) {
+            return false;
+        }
+        for (int i = 0; i < str.length(); i++) {
+            if(!Character.isDigit(str.charAt(i))) {
+                return false;
+            } 
+        }
+        return true;
+    }
 
     // Evaluate an expression in infix and return resulting number
     // Each string is one of: "*", "+", "-", "/", "%", "^", "(", ")", "0", or
     // a number: [1-9][0-9]*.  There is no unary minus operator.
     public static Num evaluateInfix(String[] expr) throws Exception {
-    	 // Stack for numbers: 'valuesStack' 
-        Stack<Num> valuesStack = new Stack<>(); 
+    	 // Stack for numbers: 'digits' 
+        Stack<Num> digits = new Stack<>(); 
   
-        // Stack for Operators: 'opsStack' 
-        Stack<Character> opsStack = new Stack<Character>();
+        // Stack for Operators: 'operands' 
+        Stack<Character> operands = new Stack<Character>();
 
         for (int i = 0; i < expr.length; i++) 
-        { 
-             // Current token is a whitespace, skip it 
-            if (expr[i].charAt(0) == ' ') 
-                continue; 
-  
+        {
             // Current token is a number, push it to stack for numbers 
-            if (expr[i].charAt(0) >= '0' && expr[i].charAt(0) <= '9') 
+            if (isDigit(expr[i])) 
             { 
-                StringBuffer sbuf = new StringBuffer(); 
-                // There may be more than one digits in number 
-                while (i < expr.length && expr[i].charAt(0) >= '0' && expr[i].charAt(0) <= '9') 
-                    sbuf.append(expr[i++]); 
-                valuesStack.push(new Num(Long.parseLong(sbuf.toString()))); 
+                digits.push(new Num(expr[i])); 
             } 
   
-            // Current token is an opening brace, push it to 'opsStack' 
+            // Current token is an opening brace, push it to 'operands' 
             else if (expr[i].charAt(0) == '(') 
-                opsStack.push(expr[i].charAt(0)); 
+                operands.push(expr[i].charAt(0)); 
   
             // Closing brace encountered, solve entire brace 
             else if (expr[i].charAt(0) == ')') 
             { 
-                while (opsStack.peek() != '(') 
-                  valuesStack.push(applyOp(opsStack.pop(), valuesStack.pop(), valuesStack.pop())); 
-                opsStack.pop(); 
+            	// call operation function to perform operations on the numbers popped from digits stack
+                while (operands.peek() != '(') 
+                  digits.push(operation(operands.pop(), digits.pop(), digits.pop())); 
+                operands.pop(); 
             } 
   
             // Current token is an operator. 
             else if (expr[i].charAt(0) == '+' || expr[i].charAt(0) == '-' || 
-            		expr[i].charAt(0) == '*' || expr[i].charAt(0) == '/') 
+            		expr[i].charAt(0) == '*' || expr[i].charAt(0) == '/' || expr[i].charAt(0) == '%' || expr[i].charAt(0) == '^') 
             { 
-                // While top of 'opsStack' has same or greater precedence to current 
-                // token, which is an operator. Apply operator on top of 'opsStack' 
-                // to top two elements in valuesStack stack 
-                while (!opsStack.empty() && hasPrecedence(expr[i].charAt(0), opsStack.peek())) 
-                  valuesStack.push(applyOp(opsStack.pop(), valuesStack.pop(), valuesStack.pop())); 
+            	// while the peek operand stack has same or greater precedence than the current operator, 
+            	//apply peek operand on two elements in the stack
+                while (!operands.empty() && hasPrecedence(expr[i].charAt(0), operands.peek())) 
+                  digits.push(operation(operands.pop(), digits.pop(), digits.pop())); 
   
-                // Push current token to 'opsStack'. 
-                opsStack.push(expr[i].charAt(0)); 
+                // Push current token to 'operands'. 
+                operands.push(expr[i].charAt(0)); 
             } 
         }
         
-        while (!opsStack.empty()) 
-            valuesStack.push(applyOp(opsStack.pop(), valuesStack.pop(), valuesStack.pop())); 
-        	// Top of 'valuesStack' contains result, return it 
-    	return valuesStack.pop(); 
+        while (!operands.empty()) 
+            digits.push(operation(operands.pop(), digits.pop(), digits.pop())); 
+        	// return top of digits stack 
+    	return digits.pop(); 
 	} // end of infix evaluation
         
-	//helper function for infix evaluation
+	//helper function for infix evaluation to check precedence of operands
     public static boolean hasPrecedence(char op1, char op2) 
     { 
         if (op2 == '(' || op2 == ')') 
@@ -636,8 +629,8 @@ public class Num implements Comparable < Num > {
             return true; 
     } 
 	
-    //helper function for infix evaluation
-    public static Num applyOp(char op, Num b, Num a) throws Exception 
+    //helper function for infix evaluation to apply operation on two numbers
+    public static Num operation(char op, Num b, Num a) throws Exception 
     { 
         switch (op) 
         { 
@@ -655,7 +648,7 @@ public class Num implements Comparable < Num > {
         	return power(a,Long.parseLong(b.toString()));
         } 
         return ZERO; 
-    } 
+    }
 
 
     public static void main(String[] args) {
