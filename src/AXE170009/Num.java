@@ -3,44 +3,11 @@
 
 // Change following line to your NetId
 package AXE170009;
-import java.util.Arrays;
 import java.util.Stack;
 
 public class Num implements Comparable < Num > {
 	
-	class Split {
-		Num firstHalf;
-		Num secondHalf;
-
-		Split() {
-			firstHalf = new Num("");
-			secondHalf = new Num("");
-		}
-
-		public void splitNum(Num n, int k) {
-			firstHalf.arr = new long[k];
-			firstHalf.base = n.base;
-			firstHalf.len = k;
-			firstHalf.sizeAllotted = firstHalf.len;
-			
-			secondHalf.arr = new long[n.len-k];
-			secondHalf.base = n.base;
-			secondHalf.len = n.len - k;
-			secondHalf.sizeAllotted = secondHalf.len;
-			
-			int nSize = n.len-1, fIndex = 0, sIndex = 0, nIndex = 0;
-			
-			while (nSize >= 0) {
-				if (nIndex < k) {
-					firstHalf.arr[fIndex++] = n.arr[nIndex++];
-				} else {
-					secondHalf.arr[sIndex++] = n.arr[nIndex++];
-				}
-			}
-		}
-	}
-
-    static long defaultBase = (long) Math.pow(10, 3); //multiples of 10
+	static long defaultBase = (long) Math.pow(10, 3); //multiples of 10
     long base = defaultBase; // Change as needed
     long[] arr; // array to store arbitrarily large integers
     boolean isNegative = false; // boolean flag to represent negative numbers
@@ -101,7 +68,7 @@ public class Num implements Comparable < Num > {
         }
 
         if (x == 0) {
-            this.arr[len++] = x;
+            this.arr[this.len++] = x;
         } else {
             long temp;
             while (x > 0) {
@@ -124,8 +91,8 @@ public class Num implements Comparable < Num > {
     
     //utility function for getting maximum length of two nums
     private static int maxlen(Num a, Num b) {
-		int k = (a.len > b.len)?a.len : b.len;
-		return k;
+		int max = (a.len > b.len)?a.len : b.len;
+		return max;
  	}
     
     //sum of two signed big integers
@@ -188,12 +155,12 @@ public class Num implements Comparable < Num > {
     	if(a.len == 0)return b;
     	if(b.len == 0)return a;
     	
-		Num res = new Num(a.base, maxlen(a, b));
+    	int max = maxlen(a, b);
+		Num res = new Num(a.base, max-1);
 		
 		int indexa = 0, indexb = 0;
 		long borrow = 0l, diff;
-		
-		while(indexa < a.len || indexb < b.len || borrow > 0) {
+		for(int i = 0; i < max; i++) {
 			diff = indexa < a.len ? a.arr[indexa++] : 0;
 			diff -= indexb < b.len ? b.arr[indexb++] : 0; 
 			diff -= borrow;
@@ -202,24 +169,25 @@ public class Num implements Comparable < Num > {
 				diff += res.base;
 				borrow = 1;
 			}
-			if(!( !(indexb < a.len) && diff == 0) || (diff == 0)) {
-				res.arr[res.len++] = diff;
-			}
+			res.arr[res.len++] = diff;
 		}
-		//res.trim();
+		trimNum(res);
 		assignSign(res, isNegative);
 		return res;
 	}
     
+    private static void trimNum(Num a) {
+    	int len = 0;
+    	for(int i = a.len - 1; i >= 0; i--) {
+    		if(a.arr[i] > 0)break;
+    		len++;
+    	}
+    	a.len -= len; 
+    }
+    
     public static Num product(Num a, Num b) {
     	Num res;
-    	if(a.len == 1 || b.len == 1) {
-    		res = b.len == 1 ? product(a, b.arr[0]) : product(b, a.arr[0]);
-    	}
-    	else if(a.len == 0 || b.len == 0){
-    		res = new Num("", a.base);
-    	}
-    	else if(a.len >= b.len) {
+    	if(a.len >= b.len) {
     		res = karatsubasplit(a, b);
     	}
     	else {
@@ -230,18 +198,21 @@ public class Num implements Comparable < Num > {
     }
 
     //product of a Num and long
-    private static Num product(Num n, long base) {
-    	if(base == 0) {
-    		return new Num(0l, base);
+    private static Num product(Num n, long b) {
+    	if(b == 0) {
+    		return new Num(0, n.base);
+    	}
+    	if(b == 1) {
+    		return n;
     	}
     	
     	int index = 0;
-    	long carry = 0l, sum;
-    	Num res = new Num(n.base, 0);
+    	long carry = 0l, sum, temp;
+    	Num res = new Num(n.base, n.len);
     	
     	while(index < n.len || carry > 0) {
-    		sum = (n.arr[index] * base + carry);
-    		index++;
+    		temp = (index < n.len) ? n.arr[index++] : 0;
+    		sum = ( temp * b + carry);
     		res.arr[res.len++] = sum % res.base;
     		carry = sum / res.base;
     	}
@@ -249,200 +220,208 @@ public class Num implements Comparable < Num > {
 	}
     
     private static Num karatsubasplit(Num a, Num b) {
-    	int k = (int) b.len / 2;
+    	if(a.len == 0 || b.len == 0){
+    		return new Num(0, a.base);
+    	}
+    	else if(a.len == 1 || b.len == 1) {
+    		return b.len == 1 ? product(a, b.arr[0]) : product(b, a.arr[0]);
+    	}
     	
-    	Split sp = a.new Split();
-    	sp.splitNum(a, k);
-    	Num aFirstHalf = sp.firstHalf;
-    	Num aSecondHalf = sp.secondHalf;
+    	int k = Math.max(a.len, b.len) / 2;
     	
-    	sp = b.new Split();
-    	sp.splitNum(b, k);
-    	Num bFirstHalf = sp.firstHalf;
-    	Num bSecondHalf = sp.secondHalf;
+    	Num aFirstHalf = splitNum(a, 0, k);
+    	Num aSecondHalf = splitNum(a, k, a.len - k);
     	
-    	Num partOne = product(aSecondHalf, bSecondHalf);
-    	Num partThree = product(aFirstHalf, bFirstHalf);
+    	Num bFirstHalf = splitNum(b, 0, k);
+    	Num bSecondHalf = splitNum(b, k, b.len - k);
     	
-    	Num sumAfhAsh = add(aFirstHalf, aSecondHalf);
-    	Num sumBfhBsh = add(bFirstHalf, bSecondHalf);
+    	Num partOne = karatsubasplit(aFirstHalf, bFirstHalf);
+    	Num partThree = karatsubasplit(aSecondHalf, bSecondHalf);
+    	Num partTwo = karatsubasplit(unsignedAdd(aFirstHalf, aSecondHalf), unsignedAdd(bFirstHalf, bSecondHalf));
     	
-    	Num prodAfhshBfhsh = product(sumAfhAsh, sumBfhBsh);
-    	Num partTwo = subtract(subtract(prodAfhshBfhsh, partOne), partThree);
+    	Num temp = unsignedSubtract(partTwo, unsignedAdd(partThree, partOne), false);
+    	leftShift(temp, k);
+    	leftShift(partThree, 2 * k);
     	
-    	leftShift(partOne, 2 * k);
-    	leftShift(partTwo, k);
-    	
-    	Num res = add(add(partOne, partTwo), partThree);
+    	Num res = unsignedAdd(unsignedAdd(partThree,temp) ,partOne);
     	return res;
     }
+    
+    public static Num splitNum(Num n, int index, int k) {
+    	if(k < 0)return new Num(0, n.base);
+    	
+		Num half = new Num(n.base, k-1);
+		for(int i = 0; i < Math.min(k, n.len); i++) {
+			half.arr[half.len++] = n.arr[i + index];
+		}
+		return half;
+	}
     
     private static void assignSign(Num a, boolean isNegative) {
     	a.isNegative = a.len == 1 ? (a.arr[0] == 0 ? false : isNegative) : isNegative;
     }
-
-    // Use divide and conquer
-    public static Num power(Num a, long n) {
-		//System.out.print(Arrays.toString(a.arr) + "\t");
-		if(a.isZero()) {
-			return ZERO;
-		}
-		if(n==0) return ONE;
-		if(n==1) {
-			System.out.print(Arrays.toString(a.arr) + "\t");
-			return a;
-		}
-		Num val = power(a, n/2);
-		Num square = product(val, val);
-		if(n%2 == 1) {
-			return product(square, a);
-		} else {
-			return square;
-		}
-	}
-
-    public boolean isZero() {
-    	for(int i=0; i<this.len; i++) {
-    		if(this.arr[i]!=0) return false;
+    
+    private static void leftShift(Num a, int k) {
+    	long[] temp = new long[a.len + k];
+    	for(int i = 0; i < k; i++) {
+    		temp[i] = 0l;
     	}
-    	return true;
+    	for(int i = k; i < a.len + k; i++) {
+    		temp[i] = a.arr[i-k];
+    	}
+    	a.arr = temp;
+    	a.len += k;
+    	a.sizeAllotted = a.len + k;
     }
-
+    
     // Use binary search to calculate a/b
-    public static Num divide(Num a, Num b) throws Exception {
-    	Num res = new Num("", a.base);
-    	
-    	if(unsignedCompareTo(b, a) == 0) {
-    		throw new UnsupportedOperationException("Divided By Zero");
+    public static Num divide(Num a, Num b) {
+    	Num res;
+    	if(unsignedCompareTo(b, ZERO) == 0) {
+    		throw new IllegalArgumentException("Divided By Zero exception");
     	}
     	else if(unsignedCompareTo(b, ONE) == 0) {
     		res = a;
     	}
-    	else if(unsignedCompareTo(b, TWO) == 0) {
-    		res = a.by2();
-    	}
-    	
-    	int ret = unsignedCompareTo(a, b);
-    	if(ret < 0) {
-    		res = ZERO;
-    	}
-    	else if(ret == 0) {
-    		res = ONE;
-    	}
     	else {
-    		res = binarySearch(ONE, a, a, b);
+    		int isGreater = unsignedCompareTo(a, b);
+    		if(isGreater < 0) {
+	    		res = ZERO;
+	    	}
+	    	else if(isGreater == 0) {
+	    		res = ONE;
+	    	}
+	    	else {
+	    		res = binarySearch(a, b, ONE, a);
+	    	}
     	}
+    	for(int i = 0; i < res.len; i++) {
+    		System.out.print(res.arr[i]+" ");
+    	}
+    	System.out.println();
+    	
     	assignSign(res, a.isNegative ^ b.isNegative);
         return res;
     }
 
-    private static Num binarySearch(Num low, Num high, Num a, Num b) {
-    	Num temp = unsignedAdd(low, high);
-    	Num mid = temp.by2();
+    private static Num binarySearch(Num a, Num b, Num start, Num end) {
+    	Num mid = unsignedAdd(start, end).by2();
 		Num left = product(mid, b);
 		Num right = unsignedAdd(left,b);
+		
 		int leftcomp = unsignedCompareTo(left, a);
 		int rightcomp = unsignedCompareTo(a, right);
 		
 		if (leftcomp > 0) {
-			return binarySearch(low, mid, a, b);
+			return binarySearch(a, b, start, unsignedSubtract(mid, ONE, mid.isNegative));
 		}
 		else if (leftcomp <= 0 && rightcomp < 0) {
 			return mid;
 		}
-		else {
-			return binarySearch(unsignedAdd(mid, ONE), high, a, b);
-		}
+		return binarySearch( a, b, unsignedAdd(mid, ONE), end);
 	}
     
-    private static void leftShift(Num a, int k) {
-    	long[] temp = new long[a.sizeAllotted + k];
-    	for(int i = 0; i < k; i++) {
-    		temp[i] = 0l;
+    // Divide by 2, for using in binary search
+    public Num by2() {
+    	Num res = product(this, this.base/2);
+    	rightShift(res);
+    	res.isNegative = this.isNegative;
+        return res;
+    }
+    
+    //right shifting the number by 1.
+    private void rightShift(Num res) {
+    	long[] tempArr = new long[res.len-1];
+		for(int i = 1; i < res.len; i++) {
+			tempArr[i-1] = res.arr[i];
+		}
+		res.arr = tempArr;
+		res.len--;
+	}
+    
+    // Use divide and conquer
+    public static Num power(Num a, long n) {
+		if(a.isZero()) return ZERO;
+		if(n==0) return ONE;
+		if(n==1) return a;
+		
+		if(n % 2 == 0) {
+			Num res = power(a, n/2);
+			return product(res, res);
+		}
+		return product(a, power(a, n-1));
+	}
+    
+    //returns whether Num is of value 0 or not. 
+    public boolean isZero() {
+    	for(int i = 0; i < this.len; i++) {
+    		if(this.arr[i] != 0) return false;
     	}
-    	for(int i = k; i < a.sizeAllotted + k; i++) {
-    		temp[i] = a.arr[i];
-    	}
-    	a.arr = temp;
+    	return true;
     }
     
     // return a%b
-    public static Num mod(Num a, Num b) throws Exception {
+    public static Num mod(Num a, Num b){
 		if(b.isZero()) {
-			throw new ArithmeticException("Divisor b is 0");
+			throw new ArithmeticException("Divisor - b is 0");
 		}
+		
 		int compResult = a.compareTo(b);
 		if(a.isZero() || compResult == 0) {
 			return ZERO;
 		} else if(compResult == -1) {
 			return a;
-		} else if(compResult == 1){
-			return subtract(a, product(divide(a,b), b));
 		}
-		return null;
+		return subtract(a, product(divide(a, b), b));
     }
 
     // Use binary search
     public static Num squareRoot(Num a) {
-    	if(a.compareTo((ZERO)) == -1){ // Checks if a is less than zero
-    		return null;
+    	if(a.isNegative){
+    		throw new ArithmeticException("Squareroot of negative no. cannnot be calculated.");
     	}
-    	if(a.compareTo((ZERO)) == 0){
-    		return (new Num(0));
+    	
+    	if(a.compareTo(ZERO) == 0){
+    		return ZERO;
     	}
-    	if(a.compareTo((ONE)) == 0){
-    		return (new Num(1));
-    	}else{
-    		Num result = binSquare(a, (TWO), a.by2()); // recursively finds the square root
-    		return result;
+    	
+    	if(a.compareTo(ONE) == 0){
+    		return ONE;
     	}
+    	
+    	// recursively finds the square root
+		Num result = squareRootBinarySearch(a, ONE, a.by2());
+		return result;
     }
 
 
-    private static Num binSquare(Num a, Num first, Num second){
-    	if(second.compareTo(first) != -1){
-    		Num diff=subtract(second,first);
-    		Num mid = unsignedAdd(first, diff.by2());
-			// If the element is present at the middle itself
-    		Num product = product(mid, mid);
-    		int dec = product.compareTo(a);
-			if (dec == 0){
-				return mid;
-			}
-			// If element is smaller than mid, then it can only
-			// be present in left subarray
-			if (dec != -1) {
-				return binSquare(a, first, subtract(mid, ONE));
-			}
-			// Else the element can only be present in right
-			// subarray
-			return binSquare(a, add(mid, ONE), second);
-    	}
-    	return second;
+    private static Num squareRootBinarySearch(Num a, Num start, Num end){
+    	Num mid = unsignedAdd(start, end).by2();
+    	Num left = product(mid, mid);
+    	Num right = unsignedAdd(unsignedAdd(left, product(mid, 2)), ONE);
+    	int leftComp = unsignedCompareTo(left, a);
+    	int rightComp = unsignedCompareTo(a, right);
+    	if(leftComp <= 0 && rightComp < 0){
+			return mid;
+		}
+		else if(leftComp > 0){
+			return squareRootBinarySearch(start, mid, a);
+		}
+		return squareRootBinarySearch(unsignedAdd(mid,ONE), end, a);
     }
 
 
     // Utility functions
     // compare "this" to "other": return +1 if this is greater, 0 if equal, -1 otherwise
     public int compareTo(Num other) {
-	if(this.isNegative && !other.isNegative) {
-        	return -1;
-        } else if(!this.isNegative && other.isNegative) {
-        	return 1;
-        } else {
-        	if(this.len < other.len) return -1;
-        	else if(this.len > other.len) return 1;
-        	else {
-        		for(int i=(this.len-1); i>=0; i--) {
-        			if(this.arr[i]>other.arr[i]) {
-        				return 1;
-        			} else if(this.arr[i]<other.arr[i]) {
-        				return -1;
-        			}
-        		}
-        	}
-        }
-        return 0;
+		if(this.isNegative && !other.isNegative)
+		{
+	    	return -1;
+	    } 
+		else if(!this.isNegative && other.isNegative) {
+			return 1;
+	    }
+		return unsignedCompareTo(this, other);
     }
 
     // Output using the format "base: elements of list ..."
@@ -450,53 +429,42 @@ public class Num implements Comparable < Num > {
     // then the output is "100: 65 9 1"
     public void printList() {
     	System.out.print(base + ": ");
-    	for(int i=0; i < len; i++) {
-    		System.out.print(arr[i]+" ");
+    	for(int i=0; i < this.len; i++) {
+    		System.out.print(this.arr[i]+" ");
     	}
     	System.out.println();
     }
 
     // Return number to a string in base 10
     public String toString() {
-		Num tenBase = this.convertBase(10);
-		StringBuilder tenBaseSB = new StringBuilder();
-		for(int i=0; i<tenBase.len; i++) {
-			tenBaseSB.insert(0, tenBase.arr[i]);
-		} 
-		if(tenBase.isNegative = true) {
-			return "-" + tenBaseSB.toString();
-		}
-		return tenBaseSB.toString();
+		String res;
+		StringBuilder sb = new StringBuilder();
+		long baseSize = (int) Math.log10(this.base());
+		
+		for (int i = 0; i < this.len; i++) {
+		      sb.insert(0, String.format("%0" + baseSize + "d", this.arr[i]));
+	    }
+	    res = sb.toString().replaceFirst("^0+(?!$)", "");
+	    if(isNegative)res = "-"+res;
+	    return res;
     }
-
+    
+    //return base of Num calling method.
     public long base() {
-        return base;
+        return this.base;
     }
 
     // Return number equal to "this" number, in base=newBase
     public Num convertBase(int newBase) {
         long oldBase = this.base;
-		int index = this.len;
-		Num newNumber = new Num("", newBase);
-		while(index>0) {
-			newNumber = add(product(newNumber, new Num(oldBase)), new Num(this.arr[--index], newBase));
+		int size = this.len;
+		Num newNum = new Num(0);
+		while(size > 0) {
+			newNum = add(product(newNum, new Num(oldBase)), new Num(this.arr[--size], newBase));
 		}
-		newNumber.isNegative = this.isNegative;
-		return newNumber;
+		newNum.isNegative = this.isNegative;
+		return newNum;
     }
-
-    // Divide by 2, for using in binary search
-    public Num by2() {
-    	Num res = product(this, this.base/2);
-    	rightShift(res);
-        return res;
-    }
-
-    private void rightShift(Num res) {
-		long arr2[] = new long[arr.length-1];
-		System.arraycopy(arr, 1, arr2, 0, arr.length-1);
-		arr = arr2;
-	}
 
 	// Evaluate an expression in postfix and return resulting number
     // Each string is one of: "*", "+", "-", "/", "%", "^", "0", or
@@ -570,11 +538,10 @@ public class Num implements Comparable < Num > {
     // Evaluate an expression in infix and return resulting number
     // Each string is one of: "*", "+", "-", "/", "%", "^", "(", ")", "0", or
     // a number: [1-9][0-9]*.  There is no unary minus operator.
-    public static Num evaluateInfix(String[] expr) throws Exception {
-    	 // Stack for numbers: 'digits' 
-        Stack<Num> digits = new Stack<>(); 
-  
-        // Stack for Operators: 'operands' 
+    public static Num evaluateInfix(String[] expr){
+		// Stack for numbers: 'digits' 
+		Stack<Num> digits = new Stack<>(); 
+		// Stack for Operators: 'operands' 
         Stack<Character> operands = new Stack<Character>();
 
         for (int i = 0; i < expr.length; i++) 
@@ -630,7 +597,7 @@ public class Num implements Comparable < Num > {
     } 
 	
     //helper function for infix evaluation to apply operation on two numbers
-    public static Num operation(char op, Num b, Num a) throws Exception 
+    public static Num operation(char op, Num b, Num a) 
     { 
         switch (op) 
         { 
@@ -652,30 +619,58 @@ public class Num implements Comparable < Num > {
 
 
     public static void main(String[] args) {
-        Num x = new Num(999);
-        long[] arr = x.arr;
-        for(int i = 0; i < arr.length; i++) {
-        	System.out.print(arr[i] +" ");
-        }
-        System.out.println();
-        
-        Num y = new Num("1888");
-        arr = y.arr;
-        for(int i = 0; i < arr.length; i++) {
-        	System.out.print(arr[i] +" ");
-        }
-        System.out.println();
-        
-        
-        Num z = Num.subtract(y, x);
-        arr = z.arr;
-        for(int i = 0; i < z.len; i++) {
-        	System.out.print(arr[i] +" ");
-        }
-        System.out.println(z.isNegative);
-        
-        //Num a = Num.power(x, 8);
-        //System.out.println(a);
-        //if (z != null) z.printList();
+    	Num x = new Num(40772);
+		Num y = new Num("896");
+		x.printList();
+		y.printList();
+		Num z = Num.subtract(x, y);
+		if (z != null) {
+			System.out.print("Subtraction result: ");
+			z.printList();
+			System.out.println(z.toString());
+		}
+
+		x = new Num(30);
+		y = new Num("120");
+		z = Num.subtract(x, y);
+		if (z != null) {
+			System.out.print("Subtraction result: ");
+			z.printList();
+			System.out.println(z.toString());
+		}
+
+		z = Num.add(x, y);
+		if (z != null) {
+			System.out.print("Addition result: ");
+			z.printList();
+			System.out.println(z.toString());
+		}
+
+		z = Num.product(x, 30);
+		if (z != null) {
+			System.out.print("Product(Num, long) result: ");
+			z.printList();
+			System.out.println(z.toString());
+		}
+
+		x = new Num("23242348234288");
+		x.by2().printList();
+
+
+		x = new Num("10");
+		y = new Num("5");
+		System.out.println("x/y result 22: " + Num.divide(x, y).toString());
+
+
+		x = new Num("12345674824890223483094848923");
+		y = new Num("76543434345453");
+		System.out.println(x.by2().toString());
+		System.out.println("x/y result: " + Num.divide(x, y).toString());
+		
+		Num k= Num.evaluateInfix(new String[] { "(" ,"5" ,"+", "2","^", "2", ")" });
+		System.out.println("infix evaluation = " + k.toString());
+		/*Num k1 = Num.squareRoot(new Num("36"));
+		System.out.println("Square root = " + k1);*/
+		System.out.println("599236705...406666667  " +  Num.power(new Num(3), 999));
     }
 }
