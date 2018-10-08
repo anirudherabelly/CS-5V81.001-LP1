@@ -1,13 +1,20 @@
 // Starter code for lp1.
 // Version 1.0 (8:00 PM, Wed, Sep 5).
 
+/* Developed by :
+ * Anirudh Erabelly
+ * Sai Krishna Reddy
+ * Dinesh Reddy
+ * Sreyas Reddy
+ * */
+
 // Change following line to your NetId
 package AXE170009;
 import java.util.Stack;
 
 public class Num implements Comparable < Num > {
 	
-	static long defaultBase = (long) Math.pow(10, 3); //multiples of 10
+	static long defaultBase = (long) Math.pow(10, 5); //multiples of 10
     long base = defaultBase; // Change as needed
     long[] arr; // array to store arbitrarily large integers
     boolean isNegative = false; // boolean flag to represent negative numbers
@@ -396,18 +403,26 @@ public class Num implements Comparable < Num > {
 
 
     private static Num squareRootBinarySearch(Num a, Num start, Num end){
-    	Num mid = unsignedAdd(start, end).by2();
-    	Num left = product(mid, mid);
-    	Num right = unsignedAdd(unsignedAdd(left, product(mid, 2)), ONE);
-    	int leftComp = unsignedCompareTo(left, a);
-    	int rightComp = unsignedCompareTo(a, right);
-    	if(leftComp <= 0 && rightComp < 0){
-			return mid;
+    	if(end.compareTo(ZERO) == 0|| end.compareTo(ONE) ==0  ) {
+			return 	end;
 		}
-		else if(leftComp > 0){
-			return squareRootBinarySearch(start, mid, a);
+    	Num result = new Num(0, a.base);
+		
+		while (start.compareTo(end) == -1 || start.compareTo(end) == 0) {
+			Num mid =add (start,end).by2();
+			Num prod = product(mid, mid);
+			if(prod.compareTo(a) == 0) {
+				return mid;
+			}
+			if(prod.compareTo(a) == -1) {
+				start = add(mid,ONE);
+				result = mid;
+			}
+			else {
+				end=subtract(mid, ONE);
+			}
 		}
-		return squareRootBinarySearch(unsignedAdd(mid,ONE), end, a);
+		return result;
     }
 
 
@@ -619,8 +634,8 @@ public class Num implements Comparable < Num > {
 
 
     public static void main(String[] args) {
-    	Num x = new Num(40772);
-		Num y = new Num("896");
+    	Num x = new Num(4675243);
+		Num y = new Num("8969028");
 		x.printList();
 		y.printList();
 		Num z = Num.subtract(x, y);
@@ -630,8 +645,8 @@ public class Num implements Comparable < Num > {
 			System.out.println(z.toString());
 		}
 
-		x = new Num(30);
-		y = new Num("120");
+		x = new Num(30893889);
+		y = new Num("1207486488920");
 		z = Num.subtract(x, y);
 		if (z != null) {
 			System.out.print("Subtraction result: ");
@@ -653,14 +668,14 @@ public class Num implements Comparable < Num > {
 			System.out.println(z.toString());
 		}
 
-		x = new Num("23242348234288");
+		x = new Num("2324234883768392234288");
 		x.by2().printList();
 
 
-		x = new Num("10");
-		y = new Num("5");
-		System.out.println("x/y result 22: " + Num.divide(x, y).toString());
-
+		x = new Num("1008");
+		y = new Num("24");
+		System.out.println("x/y result 42: " + Num.divide(x, y).toString());
+		System.out.println("modulo result: " + Num.mod(x, new Num(5)).toString());
 
 		x = new Num("12345674824890223483094848923");
 		y = new Num("76543434345453");
@@ -669,8 +684,8 @@ public class Num implements Comparable < Num > {
 		
 		Num k= Num.evaluateInfix(new String[] { "(" ,"5" ,"+", "2","^", "2", ")" });
 		System.out.println("infix evaluation = " + k.toString());
-		/*Num k1 = Num.squareRoot(new Num("36"));
-		System.out.println("Square root = " + k1);*/
-		System.out.println("599236705...406666667  " +  Num.power(new Num(3), 999));
+		Num k1 = Num.squareRoot(new Num("36"));
+		System.out.println("Square root = " + k1);
+		System.out.println("power of 3 and 999" +  Num.power(new Num(3), 999));
     }
 }
